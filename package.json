@@ -1,0 +1,32 @@
+{
+  "name": "release-control-platform",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "worker": "node src/workers/deploymentWorker.js",
+    "migrate": "node database/migrate.js",
+    "seed": "node database/seed.js",
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "bullmq": "^5.12.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "ioredis": "^5.4.1",
+    "pg": "^8.13.0",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/tests/jest.setup.js"]
+  }
+}
