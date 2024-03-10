@@ -57,3 +57,23 @@ CREATE TABLE IF NOT EXISTS approvals (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS deployment_locks (
+  id BIGSERIAL PRIMARY KEY,
+  service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+  environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE,
+  release_id BIGINT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  owner_token VARCHAR(120) NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(service_id,environment_id)
+);
+
+CREATE TABLE IF NOT EXISTS release_events (
+  id BIGSERIAL PRIMARY KEY,
+  release_id BIGINT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
+  environment_id INTEGER REFERENCES environments(id),
+  event_type VARCHAR(100) NOT NULL,
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
