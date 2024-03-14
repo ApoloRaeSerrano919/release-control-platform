@@ -77,3 +77,6 @@ CREATE TABLE IF NOT EXISTS release_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_release_status ON releases(status);
+CREATE INDEX IF NOT EXISTS idx_attempt_release ON deployment_attempts(release_id);
+CREATE INDEX IF NOT EXISTS idx_event_release ON release_events(release_id,created_at);
