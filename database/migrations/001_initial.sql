@@ -49,8 +49,6 @@ CREATE TABLE IF NOT EXISTS deployment_attempts (
 
 CREATE TABLE IF NOT EXISTS approvals (
   id BIGSERIAL PRIMARY KEY,
-  release_id BIGINT NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
-  environment_id INTEGER NOT NULL REFERENCES environments(id),
   approver VARCHAR(255) NOT NULL,
   decision VARCHAR(20) NOT NULL CHECK (decision IN ('APPROVED','REJECTED')),
   comment TEXT,
