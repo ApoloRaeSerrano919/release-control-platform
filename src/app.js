@@ -14,3 +14,8 @@ app.get('/health',(_req,res) => {
   res.json({status:'ok',service:'release-control'});
 });
 
+app.use('/api/services',serviceRoutes);
+app.use('/api/releases',releaseRoutes);
+app.use('/api/metrics',metricsRoutes);
+
+module.exports = app;
