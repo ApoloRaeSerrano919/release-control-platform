@@ -12,3 +12,9 @@ function getDeploymentQueue() {
   return deploymentQueue;
 }
 
+async function closeDeploymentQueue() {
+  if (!deploymentQueue) return;
+  await deploymentQueue.close();
+  deploymentQueue = null;
+}
+
