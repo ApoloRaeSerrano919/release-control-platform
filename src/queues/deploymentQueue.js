@@ -18,3 +18,4 @@ async function closeDeploymentQueue() {
   deploymentQueue = null;
 }
 
+module.exports = { getDeploymentQueue, closeDeploymentQueue };
