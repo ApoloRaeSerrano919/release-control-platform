@@ -17,3 +17,5 @@ router.get('/', async (_req,res) => {
   res.json({services:result.rows});
 });
 
+router.post('/', async (req,res) => {
+  try {
