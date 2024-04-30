@@ -19,3 +19,11 @@ router.get('/', async (_req,res) => {
 
 router.post('/', async (req,res) => {
   try {
+    const input = z.object({
+      name:z.string().min(2),
+      repositoryUrl:z.string().url(),
+      ownerTeam:z.string().min(2),
+      deploymentStrategy:z.enum(['rolling','blue_green','canary']).optional(),
+      healthPath:z.string().default('/health')
+    }).parse(req.body);
+
