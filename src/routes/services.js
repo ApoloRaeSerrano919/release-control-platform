@@ -27,3 +27,19 @@ router.post('/', async (req,res) => {
       healthPath:z.string().default('/health')
     }).parse(req.body);
 
+    const service = (await pool.query(
+      `INSERT INTO services
+       (name,repository_url,owner_team,deployment_strategy,health_path)
+       VALUES($1,$2,$3,$4,$5)
+       RETURNING *`,
+      [
+        input.name,
+        input.repositoryUrl,
+        input.ownerTeam,
+        input.deploymentStrategy || 'rolling',
+        input.healthPath
+      ]
+    )).rows[0];
+
+    res.status(201).json(service);
+  } catch (error) {
