@@ -11,3 +11,14 @@ async function deployArtifact({service,environment,release}) {
   };
 }
 
+async function rollbackArtifact({service,environment,targetVersion}) {
+  await new Promise(r=>setTimeout(r,200));
+
+  return {
+    provider:'simulated',
+    service:service.name,
+    environment:environment.name,
+    restoredVersion:targetVersion
+  };
+}
+
