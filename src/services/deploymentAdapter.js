@@ -22,3 +22,4 @@ async function rollbackArtifact({service,environment,targetVersion}) {
   };
 }
 
+module.exports = { deployArtifact,rollbackArtifact };
