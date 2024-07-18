@@ -192,3 +192,79 @@ async function deploy(job) {
   }
 }
 
+async function rollback(job) {
+  const {releaseId,environmentId,targetVersion,reason} = job.data;
+  const client = await pool.connect();
+  let lock;
+
+  try {
+    await client.query('BEGIN');
+
+    const ctx = await loadContext(client,releaseId,environmentId);
+
+    lock = await acquireLock(client,{
+      serviceId:ctx.service.id,
+      environmentId,
+      releaseId
+    });
+
+    await client.query(
+      `UPDATE releases SET status='ROLLING_BACK',updated_at=NOW() WHERE id=$1`,
+      [releaseId]
+    );
+
+    await addEvent(client,releaseId,environmentId,'ROLLBACK_STARTED',{
+      targetVersion,
+      reason
+    });
+
+    await client.query('COMMIT');
+
+    await rollbackArtifact({
+      service:ctx.service,
+      environment:ctx.environment,
+      targetVersion
+    });
+
+    const verification = await runHealthChecks(
+      ctx.environment,
+      ctx.service
+    );
+
+    if (!verification.ok) throw new Error('rollback_health_check_failed');
+
+    await client.query('BEGIN');
+
+    await client.query(
+      `UPDATE environments
+       SET current_version=$2
+       WHERE id=$1`,
+      [environmentId,targetVersion]
+    );
+
+    await client.query(
+      `UPDATE releases
+       SET status='ROLLED_BACK',updated_at=NOW()
+       WHERE id=$1`,
+      [releaseId]
+    );
+
+    await addEvent(client,releaseId,environmentId,'ROLLBACK_SUCCEEDED',{
+      targetVersion,
+      reason,
+      checks:verification.checks
+    });
+
+    await releaseLock(client,lock.owner_token);
+
+    await client.query('COMMIT');
+
+    return {ok:true,targetVersion};
+  } catch (error) {
+    await client.query('ROLLBACK').catch(()=>{});
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
