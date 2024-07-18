@@ -45,3 +45,150 @@ async function loadContext(client,releaseId,environmentId) {
   };
 }
 
+async function deploy(job) {
+  const {releaseId,environmentId,attemptId} = job.data;
+  const client = await pool.connect();
+  let lock;
+
+  try {
+    await client.query('BEGIN');
+
+    const ctx = await loadContext(client,releaseId,environmentId);
+
+    lock = await acquireLock(client,{
+      serviceId:ctx.service.id,
+      environmentId,
+      releaseId
+    });
+
+    const deployStatus =
+      ctx.environment.name === 'production'
+        ? 'DEPLOYING_PRODUCTION'
+        : 'DEPLOYING_STAGING';
+
+    await client.query(
+      `UPDATE releases SET status=$2,updated_at=NOW() WHERE id=$1`,
+      [releaseId,deployStatus]
+    );
+
+    await client.query(
+      `UPDATE deployment_attempts
+       SET status='RUNNING',started_at=NOW()
+       WHERE id=$1`,
+      [attemptId]
+    );
+
+    await addEvent(client,releaseId,environmentId,'DEPLOYMENT_STARTED',{
+      attemptId,
+      workerJobId:job.id,
+      version:ctx.release.version
+    });
+
+    await client.query('COMMIT');
+
+    await deployArtifact(ctx);
+
+    const verification = await runHealthChecks(
+      ctx.environment,
+      ctx.service
+    );
+
+    if (!verification.ok) {
+      throw new Error('health_check_failed');
+    }
+
+    await client.query('BEGIN');
+
+    const previousVersion = ctx.environment.current_version;
+
+    await client.query(
+      `UPDATE environments
+       SET last_known_good_version=COALESCE(current_version,last_known_good_version),
+           current_version=$2
+       WHERE id=$1`,
+      [environmentId,ctx.release.version]
+    );
+
+    const finalStatus =
+      ctx.environment.name === 'production'
+        ? 'SUCCEEDED'
+        : 'READY_FOR_PRODUCTION';
+
+    await client.query(
+      `UPDATE releases
+       SET status=$2,updated_at=NOW()
+       WHERE id=$1`,
+      [releaseId,finalStatus]
+    );
+
+    await client.query(
+      `UPDATE deployment_attempts
+       SET status='SUCCEEDED',completed_at=NOW()
+       WHERE id=$1`,
+      [attemptId]
+    );
+
+    await addEvent(client,releaseId,environmentId,'DEPLOYMENT_SUCCEEDED',{
+      attemptId,
+      previousVersion,
+      deployedVersion:ctx.release.version,
+      checks:verification.checks
+    });
+
+    await releaseLock(client,lock.owner_token);
+
+    await client.query('COMMIT');
+
+    logger.info({
+      releaseId,
+      environment:ctx.environment.name,
+      version:ctx.release.version
+    },'deployment succeeded');
+
+    return {ok:true};
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch {}
+
+    try {
+      await client.query('BEGIN');
+
+      await client.query(
+        `UPDATE releases SET status='FAILED',updated_at=NOW() WHERE id=$1`,
+        [job.data.releaseId]
+      );
+
+      if (job.data.attemptId) {
+        await client.query(
+          `UPDATE deployment_attempts
+           SET status='FAILED',failure_reason=$2,completed_at=NOW()
+           WHERE id=$1`,
+          [job.data.attemptId,error.message]
+        );
+      }
+
+      await addEvent(
+        client,
+        job.data.releaseId,
+        job.data.environmentId,
+        'DEPLOYMENT_FAILED',
+        {reason:error.message,workerJobId:job.id}
+      );
+
+      if (lock) {
+        await releaseLock(client,lock.owner_token);
+      }
+
+      await client.query('COMMIT');
+    } catch (inner) {
+      await client.query('ROLLBACK').catch(()=>{});
+      logger.error({err:inner},'failed to persist deployment failure');
+    }
+
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
