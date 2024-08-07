@@ -29,3 +29,4 @@ router.post('/', async (req,res) => {
   }
 });
 
+router.get('/', async (_req,res) => {
