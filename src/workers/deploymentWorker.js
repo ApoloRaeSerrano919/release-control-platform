@@ -268,3 +268,16 @@ async function rollback(job) {
   }
 }
 
+new Worker(
+  'deployment-jobs',
+  async job => {
+    if (job.name === 'deploy') return deploy(job);
+    if (job.name === 'rollback') return rollback(job);
+    throw new Error(`unknown_job:${job.name}`);
+  },
+  {
+    connection:redis,
+    concurrency:4
+  }
+);
+
