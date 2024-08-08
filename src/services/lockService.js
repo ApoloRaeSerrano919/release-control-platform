@@ -20,3 +20,10 @@ async function acquireLock(client, {serviceId,environmentId,releaseId,ttlMinutes
   }
 }
 
+async function releaseLock(client, ownerToken) {
+  await client.query(
+    `DELETE FROM deployment_locks WHERE owner_token=$1`,
+    [ownerToken]
+  );
+}
+
