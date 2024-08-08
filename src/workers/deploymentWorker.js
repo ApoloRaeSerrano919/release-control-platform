@@ -281,3 +281,4 @@ new Worker(
   }
 );
 
+logger.info('ReleaseControl deployment worker started');
