@@ -16,13 +16,6 @@ async function loadContext(client,releaseId,environmentId) {
        s.repository_url,
        e.name AS environment_name,
        e.base_url,
-       e.current_version,
-       e.last_known_good_version
-     FROM releases r
-     JOIN services s ON s.id=r.service_id
-     JOIN environments e ON e.id=$2
-     WHERE r.id=$1`,
-    [releaseId,environmentId]
   )).rows[0];
 
   if (!row) throw new Error('deployment_context_not_found');
