@@ -30,3 +30,14 @@ router.post('/', async (req,res) => {
 });
 
 router.get('/', async (_req,res) => {
+  const result = await pool.query(
+    `SELECT
+       r.id,r.version,r.commit_sha,r.branch,r.status,r.created_by,r.created_at,
+       s.name AS service_name
+     FROM releases r
+     JOIN services s ON s.id=r.service_id
+     ORDER BY r.created_at DESC
+     LIMIT 100`
+  );
+
+  res.json({releases:result.rows});
