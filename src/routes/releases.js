@@ -44,3 +44,15 @@ router.get('/', async (_req,res) => {
 });
 
 router.get('/:id', async (req,res) => {
+  const id = Number(req.params.id);
+
+  const release = (await pool.query(
+    `SELECT r.*,s.name AS service_name
+     FROM releases r
+     JOIN services s ON s.id=r.service_id
+     WHERE r.id=$1`,
+    [id]
+  )).rows[0];
+
+  if (!release) return res.status(404).json({error:'release_not_found'});
+
