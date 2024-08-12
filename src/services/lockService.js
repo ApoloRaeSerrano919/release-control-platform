@@ -27,3 +27,4 @@ async function releaseLock(client, ownerToken) {
   );
 }
 
+module.exports = { acquireLock,releaseLock };
