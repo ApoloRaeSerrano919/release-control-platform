@@ -41,3 +41,6 @@ router.get('/', async (_req,res) => {
   );
 
   res.json({releases:result.rows});
+});
+
+router.get('/:id', async (req,res) => {
