@@ -56,3 +56,30 @@ router.get('/:id', async (req,res) => {
 
   if (!release) return res.status(404).json({error:'release_not_found'});
 
+  const [attempts,events,approvals] = await Promise.all([
+    pool.query(
+      `SELECT a.*,e.name AS environment_name
+       FROM deployment_attempts a
+       JOIN environments e ON e.id=a.environment_id
+       WHERE a.release_id=$1
+       ORDER BY a.created_at`,
+      [id]
+    ),
+    pool.query(
+      `SELECT ev.*,e.name AS environment_name
+       FROM release_events ev
+       LEFT JOIN environments e ON e.id=ev.environment_id
+       WHERE ev.release_id=$1
+       ORDER BY ev.created_at`,
+      [id]
+    ),
+    pool.query(
+      `SELECT a.*,e.name AS environment_name
+       FROM approvals a
+       JOIN environments e ON e.id=a.environment_id
+       WHERE a.release_id=$1
+       ORDER BY a.created_at`,
+      [id]
+    )
+  ]);
+
