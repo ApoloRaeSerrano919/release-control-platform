@@ -83,3 +83,11 @@ router.get('/:id', async (req,res) => {
     )
   ]);
 
+  res.json({
+    release,
+    attempts:attempts.rows,
+    events:events.rows,
+    approvals:approvals.rows
+  });
+});
+
