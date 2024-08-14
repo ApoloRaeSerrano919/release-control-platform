@@ -93,3 +93,8 @@ router.get('/:id', async (req,res) => {
 
 router.post('/:id/deploy', async (req,res) => {
   try {
+    const body = z.object({
+      environment:z.enum(['development','staging','production']),
+      actor:z.string().min(2)
+    }).parse(req.body);
+
