@@ -98,3 +98,13 @@ router.post('/:id/deploy', async (req,res) => {
       actor:z.string().min(2)
     }).parse(req.body);
 
+    res.json(await queueDeployment({
+      releaseId:Number(req.params.id),
+      environmentName:body.environment,
+      actor:body.actor
+    }));
+  } catch (error) {
+    res.status(400).json({error:error.message});
+  }
+});
+
