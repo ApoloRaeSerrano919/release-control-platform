@@ -116,3 +116,12 @@ router.post('/:id/approve-production', async (req,res) => {
       comment:z.string().optional()
     }).parse(req.body);
 
+    res.status(201).json(await approveProduction({
+      releaseId:Number(req.params.id),
+      ...body
+    }));
+  } catch (error) {
+    res.status(400).json({error:error.message});
+  }
+});
+
