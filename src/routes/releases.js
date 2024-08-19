@@ -110,3 +110,9 @@ router.post('/:id/deploy', async (req,res) => {
 
 router.post('/:id/approve-production', async (req,res) => {
   try {
+    const body = z.object({
+      environmentId:z.number().int().positive(),
+      approver:z.string().min(2),
+      comment:z.string().optional()
+    }).parse(req.body);
+
