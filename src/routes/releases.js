@@ -127,3 +127,8 @@ router.post('/:id/approve-production', async (req,res) => {
 
 router.post('/:id/rollback', async (req,res) => {
   try {
+    const body = z.object({
+      environment:z.enum(['staging','production']),
+      reason:z.string().min(3)
+    }).parse(req.body);
+
