@@ -132,3 +132,13 @@ router.post('/:id/rollback', async (req,res) => {
       reason:z.string().min(3)
     }).parse(req.body);
 
+    res.json(await queueRollback({
+      releaseId:Number(req.params.id),
+      environmentName:body.environment,
+      reason:body.reason
+    }));
+  } catch (error) {
+    res.status(400).json({error:error.message});
+  }
+});
+
