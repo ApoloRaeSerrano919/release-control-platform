@@ -103,3 +103,45 @@ async function approveProduction({releaseId,environmentId,approver,comment}) {
   return result.rows[0];
 }
 
+async function queueRollback({releaseId,environmentName,reason}) {
+  const release = (await pool.query(
+    `SELECT * FROM releases WHERE id=$1`,
+    [releaseId]
+  )).rows[0];
+
+  if (!release) throw new Error('release_not_found');
+
+  const env = (await pool.query(
+    `SELECT * FROM environments
+     WHERE service_id=$1 AND name=$2`,
+    [release.service_id,environmentName]
+  )).rows[0];
+
+  if (!env) throw new Error('environment_not_found');
+  if (!env.last_known_good_version) throw new Error('no_last_known_good_version');
+
+  await pool.query(
+    `UPDATE releases SET status='ROLLBACK_QUEUED',updated_at=NOW() WHERE id=$1`,
+    [releaseId]
+  );
+
+  await getDeploymentQueue().add(
+    'rollback',
+    {
+      releaseId,
+      environmentId:env.id,
+      targetVersion:env.last_known_good_version,
+      reason
+    },
+    {
+      attempts:2,
+      backoff:{type:'fixed',delay:2000}
+    }
+  );
+
+  return {
+    queued:true,
+    targetVersion:env.last_known_good_version
+  };
+}
+
