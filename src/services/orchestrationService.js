@@ -145,3 +145,8 @@ async function queueRollback({releaseId,environmentName,reason}) {
   };
 }
 
+module.exports = {
+  queueDeployment,
+  approveProduction,
+  queueRollback
+};
