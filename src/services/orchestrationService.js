@@ -91,18 +91,6 @@ async function queueDeployment({releaseId,environmentName,actor}) {
   }
 }
 
-async function approveProduction({releaseId,environmentId,approver,comment}) {
-  const result = await pool.query(
-    `INSERT INTO approvals
-     (release_id,environment_id,approver,decision,comment)
-     VALUES($1,$2,$3,'APPROVED',$4)
-     RETURNING *`,
-    [releaseId,environmentId,approver,comment || null]
-  );
-
-  return result.rows[0];
-}
-
 async function queueRollback({releaseId,environmentName,reason}) {
   const release = (await pool.query(
     `SELECT * FROM releases WHERE id=$1`,
