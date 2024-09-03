@@ -60,3 +60,4 @@ async function createRelease(input) {
   }
 }
 
+module.exports = { createRelease };
