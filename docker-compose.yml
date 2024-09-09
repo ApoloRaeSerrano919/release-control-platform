@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: release
+      POSTGRES_PASSWORD: release
+      POSTGRES_DB: release
+    ports:
+      - "5433:5432"
+    volumes:
+      - release_control_pg:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
