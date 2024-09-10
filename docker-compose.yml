@@ -15,5 +15,3 @@ services:
     ports:
       - "6380:6379"
 
-volumes:
-  release_control_pg:
