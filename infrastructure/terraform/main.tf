@@ -30,3 +30,6 @@ resource "aws_secretsmanager_secret" "database_url" {
   name = "${var.project_name}/database-url"
 }
 
+output "ecr_repository_url" {
+  value = aws_ecr_repository.release_control.repository_url
+}
