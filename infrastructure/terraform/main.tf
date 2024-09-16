@@ -13,3 +13,11 @@ provider "aws" {
   region = var.aws_region
 }
 
+resource "aws_ecr_repository" "release_control" {
+  name = "${var.project_name}-api"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
