@@ -21,11 +21,6 @@ resource "aws_ecr_repository" "release_control" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "api" {
-  name              = "/${var.project_name}/api"
-  retention_in_days = 14
-}
-
 resource "aws_secretsmanager_secret" "database_url" {
   name = "${var.project_name}/database-url"
 }
