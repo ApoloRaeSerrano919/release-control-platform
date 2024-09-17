@@ -8,3 +8,4 @@ afterAll(async () => {
     await closeDeploymentQueue();
   }
 
+  if (require.cache[redisPath]) {
