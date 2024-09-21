@@ -13,3 +13,9 @@ afterAll(async () => {
     if (redis.status !== 'end' && redis.status !== 'wait') {
       redis.disconnect();
     }
+  }
+
+  if (require.cache[dbPath]) {
+    await require('../src/db').end();
+  }
+});
