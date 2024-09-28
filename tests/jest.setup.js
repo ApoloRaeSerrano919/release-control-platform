@@ -8,6 +8,7 @@ afterAll(async () => {
     await closeDeploymentQueue();
   }
 
+  if (require.cache[redisPath]) {
     const redis = require('../src/redis');
     if (redis.status !== 'end' && redis.status !== 'wait') {
       redis.disconnect();
