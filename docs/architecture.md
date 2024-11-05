@@ -12,3 +12,7 @@ PostgreSQL holds services, releases, attempts, approvals, locks, and events. Red
 
 `deployment_locks` is unique on `(service_id, environment_id)`. The worker acquires the lock before calling the adapter and releases it when the attempt finishes.
 
+## Idempotency
+
+Creating a release with the same idempotency key returns the existing row so CI retries do not duplicate releases.
+
