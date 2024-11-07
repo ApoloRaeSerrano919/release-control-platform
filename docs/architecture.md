@@ -16,3 +16,6 @@ PostgreSQL holds services, releases, attempts, approvals, locks, and events. Red
 
 Creating a release with the same idempotency key returns the existing row so CI retries do not duplicate releases.
 
+## Adapters
+
+`deploymentAdapter` and `healthService` are local stand-ins. Swap them for ECS/EKS/Helm/HTTP checks without changing the queue or lock flow.
