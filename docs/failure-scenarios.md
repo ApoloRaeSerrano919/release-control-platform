@@ -12,3 +12,7 @@ BullMQ retries the job. Attempt state in Postgres shows progress; retries use th
 
 Adapter succeeds but health fails → release `FAILED`, event recorded, lock released.
 
+## Duplicate create
+
+Same idempotency key on `POST /api/releases` → existing release returned, no second row.
+
