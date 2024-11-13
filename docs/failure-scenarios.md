@@ -16,3 +16,7 @@ Adapter succeeds but health fails → release `FAILED`, event recorded, lock rel
 
 Same idempotency key on `POST /api/releases` → existing release returned, no second row.
 
+## Production without approval
+
+`POST .../deploy` to production with `requires_approval` → status `AWAITING_PRODUCTION_APPROVAL`, nothing queued until `approve-production`.
+
