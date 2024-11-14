@@ -20,3 +20,6 @@ Same idempotency key on `POST /api/releases` → existing release returned, no s
 
 `POST .../deploy` to production with `requires_approval` → status `AWAITING_PRODUCTION_APPROVAL`, nothing queued until `approve-production`.
 
+## Rollback
+
+`POST .../rollback` queues a job that restores last-known-good version, re-checks health, and writes events.
